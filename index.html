@@ -981,14 +981,11 @@ h1 {
   downloadBtn.addEventListener("click", () => {
     const top5El = document.getElementById("top5-container");
     if (!top5El) return;
-
-    // Aim for an output height of about 2048px
-    const targetHeight = 2048;
-    const elementHeight = top5El.offsetHeight || 1;
-    const scale = targetHeight / elementHeight;
+    
+    const dpr = window.devicePixelRatio || 2;  // use screen density
 
     html2canvas(top5El, {
-      scale: scale,
+      scale: dpr,
       useCORS: true,
       allowTaint: true,
       backgroundColor: null
