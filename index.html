@@ -361,6 +361,10 @@ h1 {
     color: #444;
     line-height: 1.45;
     text-align: center;
+    width: 100%;              /* ⭐️ add this */
+    display: flex;            /* ⭐️ add this */
+    flex-direction: column;   /* keeps paragraph + pills stacked */
+    align-items: center;      /* ⭐️ centers the whole block */
   }
 
   #disclaimer p {
@@ -543,6 +547,14 @@ h1 {
   #top5-container {
     margin: 0 auto;
   }
+  
+  .card,
+  #intro-card,
+  #results {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(255, 255, 255, 0.88); /* semi-solid instead of blur */
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
 
 }
   </style>
