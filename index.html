@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>あのちゃん楽曲ソート（Spotify版）</title>
+  <style>
+  :root {
+    --ano-blue: #add8e6;         /* main ano water-blue */
+    --ano-blue-soft: #e6f5fb;    /* soft highlight blue */
+    --ano-blue-deep: #75b4c4;    /* slightly deeper blue for shadows */
+    --ano-deep: #222222;
+    --card-bg: #ffffff;
+    --accent: #1db954;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic Medium", "YuGothic", system-ui, sans-serif;
+    background: url("ano-background.jpeg") no-repeat center center fixed;
+    background-size: cover;
+    padding: 60px 16px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    color: var(--ano-deep);
+    position: relative;
+    z-index: 1;
+    overflow-y: hidden;
+    overflow-x: hidden;
+  }
+
+h1 {
+    margin-bottom: 6px;
+    font-size: 32px;
+    letter-spacing: 0.03em;
+    font-weight: 700;
+    color: #ffffff;
+    text-shadow:
+      0 0 3px rgba(173, 216, 230, 0.7),
+      0 0 8px rgba(173, 216, 230, 0.45),
+      0 0 14px rgba(173, 216, 230, 0.3);
+  }
+
+  p {
+    margin-top: 4px;
+    margin-bottom: 16px;
+    text-align: center;
+    max-width: 720px;
+    font-size: 14px;
+    color: #555;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--ano-blue-soft);
+    color: var(--ano-deep);
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 11px;
+    margin-bottom: 10px;
+  }
+
+  .badge-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--ano-blue);
+  }
+
+  #choice-container {
+    display: none;
+    gap: 20px;
+    margin: 20px 0 10px;
+    width: 100%;
+    max-width: 900px;
+  }
+
+  .card {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.32);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 18px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
+    padding: 16px 16px 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    border: 1px solid rgba(173, 216, 230, 0.35);
+  }
+
+  .song-title {
+    font-weight: 600;
+    font-size: 18px;
+    margin-bottom: 10px;
+    text-align: center;
+    line-height: 1.3;
+    color: #2f6d80;
+    letter-spacing: 0.02em;
+    text-shadow: 0 0 3px rgba(255, 255, 255, 0.9);
+  }
+
+  .player-wrapper {
+    width: 100%;
+    height: 152px;
+    margin-bottom: 12px;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #111;
+  }
+
+  iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  .prefer-btn {
+    margin-top: auto;
+    padding: 10px 14px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    background: var(--ano-blue);
+    color: white;
+    transition:
+      transform 0.08s ease,
+      box-shadow 0.08s ease,
+      background 0.1s,
+      filter 0.1s;
+    box-shadow: 0 6px 16px rgba(173, 216, 230, 0.50);
+  }
+
+  .prefer-btn:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.03);
+    background: #bde4f0; /* slightly brighter blue */
+    box-shadow: 0 10px 20px rgba(173, 216, 230, 0.65);
+  }
+
+  #status {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+    font-size: 12px;
+    color: #555;
+    margin-bottom: 10px;
+  }
+
+  #results {
+    display: none;
+    width: 100%;
+    max-width: 650px;
+    background: rgba(255, 255, 255, 0.32);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 18px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
+    padding: 20px 20px 22px;
+    margin-top: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    overflow: visible;
+  }
+
+  #results h2 {
+    margin-top: 0;
+    margin-bottom: 4px;
+    font-size: 20px;
+  }
+
+  #results-subtext {
+    margin: 0 0 12px;
+    font-size: 12px;
+    color: #777;
+  }
+
+  /* Background selector for Top 5 */
+  #bg-selector {
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px dashed rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 12px;
+  }
+
+  #bg-upload {
+    border-radius: 999px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    padding: 4px 8px;
+    background: #fff;
+    font-size: 11px;
+  }
+
+  #bg-upload:hover {
+    background: #f9fcff;
+  }
+
+  .bg-label {
+    color: #555;
+  }
+
+  .bg-option {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: 2px solid transparent;
+    padding: 0;
+    cursor: pointer;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: #000;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  }
+
+  .bg-option.bg-selected {
+    border-color: #add8e6;
+    box-shadow: 0 0 0 2px rgba(173,216,230,0.6);
+  }
+
+  #top5-upload-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transform-origin: center center;
+    z-index: 0;
+    display: none;
+  }
+
+  #bg-controls {
+    margin-top: 4px;
+    display: none; /* hidden by default, shown after upload */
+    flex-direction: column;
+    gap: 4px;
+    font-size: 11px;
+    color: #555;
+    padding: 6px 8px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  #bg-controls label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  #bg-controls input[type="range"] {
+    flex: 1;
+  }
+
+  #bg-reset {
+    align-self: flex-end;
+    margin-top: 2px;
+    padding: 2px 8px;
+    font-size: 11px;
+    border-radius: 999px;
+    border: 1px solid #add8e6;
+    background: #f8fdff;
+    color: #333;
+    cursor: pointer;
+  }
+
+  /* Top 5 poster container */
+  #top5-container {
+    aspect-ratio: 1420 / 2190;
+    width: 310px;
+    position: relative;
+    padding: 20px;
+    overflow: hidden;
+    border-radius: 14px;
+    color: white;
+    text-shadow: 0 0 6px rgba(0,0,0,0.55);
+    background: url("top5-background1.jpeg") no-repeat center center;
+    background-size: cover;
+    background-color: #000;
+    background-repeat: no-repeat;
+    background-position: center;
+    box-sizing: border-box;
+  }
+
+  #top5-container h3 {
+    position: absolute;
+    top: 86px;
+    left: 20px;
+    z-index: 2;
+    margin: 0 0 6px;
+    font-size: 19px;
+    font-weight: 700;
+    text-shadow:
+      0 0 3px rgba(0, 0, 0, 0.55),
+      0 0 6px rgba(173, 216, 230, 0.8);
+  }
+
+  #top5-list {
+    position: absolute;
+    top: 118px;
+    left: 26px;
+    z-index: 2;
+    margin: 0;
+    padding-left: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    text-shadow:
+      0 0 3px rgba(0, 0, 0, 0.55),
+      0 0 6px rgba(173, 216, 230, 0.8);
+  }
+
+  #full-ranking-container h3 {
+    margin: 0 0 4px;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  #full-ranking-container ol {
+    margin: 0;
+    padding-left: 40px;
+    font-size: 13px;
+    max-height: 260px;
+    overflow-y: auto;
+    line-height: 1.4;
+  }
+
+  #full-ranking-container ol::-webkit-scrollbar {
+    width: 6px;
+  }
+  #full-ranking-container ol::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.12);
+    border-radius: 999px;
+  }
+
+  hr.results-divider {
+    border: none;
+    border-top: 1px dashed rgba(0, 0, 0, 0.1);
+    margin: 10px 0 12px;
+  }
+
+  #disclaimer {
+    margin-top: 16px;
+    font-size: 11px;
+    color: #444;
+    line-height: 1.45;
+    text-align: center;
+  }
+
+  #disclaimer p {
+    margin: 0 0 10px;
+  }
+
+  .social-pills {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .social-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(173, 216, 230, 0.7);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+    color: #245266;
+  }
+
+  .social-pill-x {
+    background: rgba(0, 0, 0, 0.9);
+    border-color: rgba(0, 0, 0, 0.9);
+    color: #ffffff;
+  }
+
+  .social-pill-ig {
+    background: rgba(230, 245, 251, 0.95);
+  }
+
+  .social-pill-icon svg {
+    width: 14px;
+    height: 14px;
+    display: block;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  #download-top5 {
+    margin-top: 10px;
+    margin-bottom: 4px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: none;
+    background: #add8e6;
+    color: #111;
+    cursor: pointer;
+    font-size: 12px;
+  }
+
+  #tweet-top5 {
+    margin-left: 6px;
+    margin-top: 10px;
+    margin-bottom: 4px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: none;
+    background: #000; /* X/Twitter-like black */
+    color: #fff;
+    cursor: pointer;
+    font-size: 12px;
+  }
+
+  #tweet-top5:hover {
+    opacity: 0.9;
+  }
+
+  #restart-btn {
+    margin-top: 14px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    font-size: 13px;
+    background: transparent;
+    color: #333;
+  }
+
+  #restart-btn:hover {
+    background: #f5f5f5;
+  }
+
+  #intro-card {
+    max-width: 650px;
+    background: rgba(255, 255, 255, 0.32);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 14px 18px 6px;
+    border-radius: 20px;
+    text-align: center;
+    margin-top: 40px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  }
+
+  #intro-start {
+    margin-top: 24px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .primary-btn {
+    margin-top: 14px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    background: var(--ano-blue);
+    color: white;
+    font-size: 15px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(173, 216, 230, 0.5);
+  }
+
+  .primary-btn:hover {
+    filter: brightness(1.05);
+  }
+
+  @media (max-width: 800px) {
+    #choice-container {
+      flex-direction: column;
+    }
+  }
+
+  @media (max-width: 600px) {
+  body {
+    padding: 80px 10px 24px;
+    background-image: url("ano_background_mobile.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-attachment: scroll;
+  }
+
+  h1 {
+    font-size: 30px;
+  }
+
+  p {
+    font-size: 12px;
+  }
+
+  #choice-container,
+  #results {
+    max-width: 100%;
+  }
+
+  #results {
+    width: 100%;
+    margin: 0 auto;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  #intro-card {
+    margin-top: 24px;
+  }
+
+  #intro-start {
+    margin-top: 86px;
+  }
+
+  .card {
+    padding: 12px;
+  }
+
+  /* Center the Top 5 poster on phone */
+  #top5-container {
+    margin: 0 auto;
+  }
+
+}
+  </style>
+</head>
+<body>
+
+  <h1>ano楽曲ソート</h1>
+
+  <div id="intro-card">
+    <p>
+      #anoソート とは…<br>
+      好きな曲をクリックして選んでください！🎧<br>
+      ソートが終わると、あなたの<strong>あのちゃん楽曲TOP5</strong>が完成します。🩵<br>
+      画像はダウンロードできて、自分好みの背景にも変更できます♪<br>
+      結果はそのまま𝕏でシェアできます 💫
+    </p>
+  </div>
+
+  <div id="intro-start">
+    <button id="start-btn" class="primary-btn">Start!</button>
+  </div>
+
+  <div id="choice-container">
+    <div class="card">
+      <div class="song-title" id="left-title"></div>
+      <div class="player-wrapper">
+        <iframe id="left-embed" src=""></iframe>
+      </div>
+      <button class="prefer-btn" id="left-btn">こっちが好き！</button>
+    </div>
+
+    <div class="card">
+      <div class="song-title" id="right-title"></div>
+      <div class="player-wrapper">
+        <iframe id="right-embed" src=""></iframe>
+      </div>
+      <button class="prefer-btn" id="right-btn">こっちが好き！</button>
+    </div>
+  </div>
+
+  <div id="status"></div>
+
+  <div id="results">
+    <h2>ソート結果</h2>
+    <p id="results-subtext">Top 5 と全曲ランキングです。</p>
+
+    <div id="bg-selector">
+      <span class="bg-label">背景を選ぶ：</span>
+      <button
+        class="bg-option bg-selected"
+        data-bg="top5-background1.jpeg"
+        style="background-image: url('top5-background1.jpeg');"
+      ></button>
+      <button
+        class="bg-option"
+        data-bg="top5-background2.jpeg"
+        style="background-image: url('top5-background2.jpeg');"
+      ></button>
+      <button
+        class="bg-option"
+        data-bg="top5-background3.jpeg"
+        style="background-image: url('top5-background3.jpeg');"
+      ></button>
+      <button
+        class="bg-option"
+        data-bg="top5-background4.jpeg"
+        style="background-image: url('top5-background4.jpeg');"
+      ></button>
+      <button
+        class="bg-option"
+        data-bg="top5-background5.jpeg"
+        style="background-image: url('top5-background5.jpeg');"
+      ></button>
+      <button
+        class="bg-option"
+        data-bg="top5-background6.jpeg"
+        style="background-image: url('top5-background6.jpeg');"
+      ></button>
+      <input type="file" id="bg-upload" accept="image/*" style="width: 120px; font-size: 11px;" />
+      <div id="bg-controls">
+        <label>
+          ズーム：
+          <input type="range" id="bg-zoom" min="100" max="300" value="100" />
+        </label>
+        <label>
+          上下：
+          <input type="range" id="bg-offset-y" min="0" max="100" value="50" />
+        </label>
+        <label>
+          左右：
+          <input type="range" id="bg-offset-x" min="0" max="100" value="50" />
+        </label>
+        <button id="bg-reset" type="button">リセット</button>
+      </div>
+    </div>
+
+    <div id="top5-container">
+      <img id="top5-upload-bg" alt="" />
+      <h3>My ano TOP5</h3>
+      <ol id="top5-list"></ol>
+    </div>
+
+    <button id="download-top5">📥 画像をダウンロード</button>
+    <button id="tweet-top5">𝕏 結果をツイート</button>
+
+    <hr class="results-divider">
+
+    <div id="full-ranking-container">
+      <h3>全曲ランキング</h3>
+      <ol id="ranking-list"></ol>
+    </div>
+
+    <div id="disclaimer">
+      <p>
+        このサイトは、あのちゃんが好きなファンが個人的に作った非公式ツールです。<br>
+        本人および関係各所とは一切関係ありません。<br>
+        よかったら、あのちゃん本人のアカウントもぜひチェックしてね👇
+      </p>
+      <div class="social-pills">
+        <a href="https://twitter.com/aNo2mass" target="_blank" class="social-pill social-pill-x">
+          <span class="social-pill-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <line x1="5" y1="5" x2="19" y2="19" />
+              <line x1="19" y1="5" x2="5" y2="19" />
+            </svg>
+          </span>
+          <span class="social-pill-text">@aNo2mass</span>
+        </a>
+        <a href="https://www.instagram.com/a_n_o2mass" target="_blank" class="social-pill social-pill-ig">
+          <span class="social-pill-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="4" y="4" width="16" height="16" rx="5" ry="5" />
+              <circle cx="12" cy="12" r="4" />
+              <circle cx="17" cy="7" r="1.2" />
+            </svg>
+          </span>
+          <span class="social-pill-text">@a_n_o2mass</span>
+        </a>
+      </div>
+    </div>
+    <button id="restart-btn">もう一度やる</button>
+  </div>
+
+  <!-- html2canvas must be loaded BEFORE our script uses it -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <script>
+    // 🎧 STEP 1 — Spotify Track IDs
+    const songs = [
+      { title: "絶絶絶絶対聖域", spotifyId: "4OuvKDUkdSICPKJFApZXBP" },
+      { title: "Bubble Me Face", spotifyId: "7HfZQXgBbZy3sg2lgIgFb1" },
+      { title: "骨バキ☆ゆうぐれダイアリー", spotifyId: "0qhER15H8tJCkwzMUHCvP3" },
+      { title: "ロりロっきゅんロぼ♡", spotifyId: "358WofWUQ0IyvYjW0Zj8VQ" },
+      { title: "許婚っきゅん", spotifyId: "5gpzm4uO2pX8FBGbpF5BmB" },
+      { title: "愛してる、なんてね。", spotifyId: "7guxlMFvF8yL35L8kGGM3D" },
+      { title: "この世界に二人だけ", spotifyId: "0shqTsl3iHYtb0efb5Fqkt" },
+      { title: "swim in 睡眠Tokyo", spotifyId: "5N5EEAqYZ7NVGIoQZjw9Da" },
+      { title: "社会の窓", spotifyId: "0NGOVCROwzfVUHG8M5PDuU" },
+      { title: "ハッピーラッキーチャッピー", spotifyId: "5Gb4sEeI5iitQlGaVbEcxX" },
+      { title: "YOU&愛Heaven", spotifyId: "6T9Fs7hrV65RdoGglAdKy4" },
+      { title: "Past die Future", spotifyId: "6JxDdtjlKeqktAwDN9GPq2" },
+      { title: "KILL LOVE", spotifyId: "2OrNoZhXPmWcJQLMyTEjop" },
+      { title: "ミッドナイト全部大丈夫", spotifyId: "7syobgtN1Pz9jnqI3UqsAd" },
+      { title: "猫吐極楽音頭", spotifyId: "4ZRO75GFwFiOiDAHDz20Sq" },
+      { title: "ちゅ、多様性。", spotifyId: "2FN7qaJcXH3HQfGeeBinbZ" },
+      { title: "涙くん、今日もおはようっ", spotifyId: "4GFkjdpZnIkhDtXvlnCjP0" },
+      { title: "普変", spotifyId: "0AzhddCMwOKVwmlhKtGu6F" },
+      { title: "AIDA", spotifyId: "6Ls87syrdcKepWDRGYhv2j" },
+      { title: "コミュ賞センセーション", spotifyId: "5EjMVYrEwpAMmPpQTjKKj5" },
+      { title: "スマイルあげない", spotifyId: "5PmOhvoMdydPWiv5A6wNaF" },
+      { title: "Tell Me Why", spotifyId: "701NeS6hPzeO70CqSxxKlr" },
+      { title: "ンーィテンブセ", spotifyId: "2fbpiR5moLievD1qG4IxwM" },
+      { title: "鯨の骨", spotifyId: "55BIyhxGoj1bOXSciociP6" },
+      { title: "デリート", spotifyId: "3tofAOplLXwKpcrdvj33rd" },
+      { title: "Peek a boo", spotifyId: "5RdsUihXt7XiHuSeIBo8Lf" },
+      { title: "SWEETSIDE SUICIDE", spotifyId: "1cJHuod4JUPeNV79bewlz5" },
+      { title: "アパシー", spotifyId: "3Im9MR4nbirscm5I284FdR" },
+      { title: "絶対小悪魔コーデ", spotifyId: "2cjV0mKofSWVUJIo6zYFQj" },
+      { title: "F Wonderful World", spotifyId: "4P7FrPgQqjM6OVCbr0QMEn" },
+      { title: "イート・スリープ・エスケープ", spotifyId: "4lyQPShOCd69eyLh56S6HW" }
+    ];
+
+    // 🔧 sorter state
+    let sorted = [];
+    let currentIndex = 0;
+    let compareIndex = 0;
+
+    const leftTitle = document.getElementById("left-title");
+    const rightTitle = document.getElementById("right-title");
+    const leftEmbed = document.getElementById("left-embed");
+    const rightEmbed = document.getElementById("right-embed");
+    const statusEl = document.getElementById("status");
+    const choiceContainer = document.getElementById("choice-container");
+    const resultsEl = document.getElementById("results");
+
+    // Top 5 background selector
+    const top5Container = document.getElementById("top5-container");
+    const uploadBgImg = document.getElementById("top5-upload-bg");
+    const bgButtons = document.querySelectorAll(".bg-option");
+
+    // State for user-uploaded background transforms
+    let userBgScale = 1.0;
+    let userBgOffsetY = 0; // in percentage relative to container
+    let userBgOffsetX = 0; // horizontal offset in percentage
+
+    function applyUserBgTransform() {
+      if (!uploadBgImg) return;
+      uploadBgImg.style.transform = `translate(${userBgOffsetX}%, ${userBgOffsetY}%) scale(${userBgScale})`;
+    }
+
+    // Zoom, vertical, and horizontal offset controls
+    const zoomInput = document.getElementById("bg-zoom");
+    const offsetYInput = document.getElementById("bg-offset-y");
+    const offsetXInput = document.getElementById("bg-offset-x");
+    const bgControls = document.getElementById("bg-controls");
+    const resetBtn = document.getElementById("bg-reset");
+
+    if (zoomInput && offsetYInput && offsetXInput && resetBtn) {
+      zoomInput.addEventListener("input", () => {
+        userBgScale = Number(zoomInput.value) / 100;
+        applyUserBgTransform();
+      });
+
+      offsetYInput.addEventListener("input", () => {
+        // Map slider 0–100 to -20% to +20% for gentle movement
+        const sliderVal = Number(offsetYInput.value);
+        userBgOffsetY = (sliderVal - 50) * 0.4;
+        applyUserBgTransform();
+      });
+
+      offsetXInput.addEventListener("input", () => {
+        // Map slider 0–100 to -20% to +20% for gentle movement
+        const sliderVal = Number(offsetXInput.value);
+        userBgOffsetX = (sliderVal - 50) * 0.4;
+        applyUserBgTransform();
+      });
+
+      resetBtn.addEventListener("click", () => {
+        userBgScale = 1.0;
+        userBgOffsetY = 0;
+        userBgOffsetX = 0;
+        if (zoomInput) zoomInput.value = "100";
+        if (offsetYInput) offsetYInput.value = "50";
+        if (offsetXInput) offsetXInput.value = "50";
+        applyUserBgTransform();
+      });
+    }
+
+    bgButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const bgPath = btn.dataset.bg;
+        top5Container.style.backgroundImage = `url("${bgPath}")`;
+
+        // update selected highlight
+        bgButtons.forEach(b => b.classList.remove("bg-selected"));
+        btn.classList.add("bg-selected");
+        // Remove highlight from user upload
+        const uploadInput = document.getElementById("bg-upload");
+        if (uploadInput) uploadInput.style.border = "";
+        if (uploadBgImg) {
+          uploadBgImg.style.display = "none";
+          uploadBgImg.style.transform = "";
+        }
+        if (bgControls) {
+          bgControls.style.display = "none";
+        }
+      });
+    });
+
+    // Allow user to upload their own background image
+    const uploadInput = document.getElementById("bg-upload");
+    uploadInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target.result;
+        if (uploadBgImg) {
+          uploadBgImg.src = dataUrl;
+          uploadBgImg.style.display = "block";
+        }
+        top5Container.style.backgroundImage = "none";
+
+        // Remove highlight from preset backgrounds
+        bgButtons.forEach(b => b.classList.remove("bg-selected"));
+
+        // Optional: visually indicate user-uploaded image is active
+        uploadInput.style.border = "2px solid #add8e6";
+
+        // Reset transform state and sliders
+        userBgScale = 1.0;
+        userBgOffsetY = 0;
+        userBgOffsetX = 0;
+        if (zoomInput) zoomInput.value = "100";
+        if (offsetYInput) offsetYInput.value = "50";
+        if (offsetXInput) offsetXInput.value = "50";
+        applyUserBgTransform();
+
+        // Show the controls now that a custom image is active
+        if (bgControls) {
+          bgControls.style.display = "flex";
+        }
+      };
+
+      reader.readAsDataURL(file);
+    });
+
+    function spEmbedUrl(id) {
+      if (!id) return "";
+      return `https://open.spotify.com/embed/track/${id}?utm_source=generator`;
+    }
+
+    function loadSong(side, song) {
+      const titleEl = side === "left" ? leftTitle : rightTitle;
+      const embedEl = side === "left" ? leftEmbed : rightEmbed;
+
+      titleEl.textContent = song.title;
+      embedEl.src = spEmbedUrl(song.spotifyId);
+    }
+
+    function startSorter() {
+      sorted = [];
+      currentIndex = 0;
+      compareIndex = 0;
+      resultsEl.style.display = "none";
+      choiceContainer.style.display = "flex";
+      document.body.style.overflowY = "hidden";
+      statusEl.textContent = "";
+      statusEl.style.display = "none";
+      nextStep();
+    }
+
+    function nextStep() {
+      if (currentIndex >= songs.length) {
+        showResults();
+        return;
+      }
+
+      if (sorted.length === 0) {
+        sorted.push(currentIndex);
+        currentIndex++;
+        nextStep();
+        return;
+      }
+
+      if (compareIndex >= sorted.length) {
+        sorted.push(currentIndex);
+        currentIndex++;
+        compareIndex = 0;
+        nextStep();
+        return;
+      }
+
+      const newSongIndex = currentIndex;
+      const existSongIndex = sorted[compareIndex];
+
+      loadSong("left", songs[newSongIndex]);
+      loadSong("right", songs[existSongIndex]);
+      
+      statusEl.style.display = "inline-flex";
+      statusEl.textContent = `${currentIndex + 1} / ${songs.length} 曲を比較中`;
+    }
+
+    document.getElementById("left-btn").addEventListener("click", () => {
+      sorted.splice(compareIndex, 0, currentIndex);
+      currentIndex++;
+      compareIndex = 0;
+      nextStep();
+    });
+
+    document.getElementById("right-btn").addEventListener("click", () => {
+      compareIndex++;
+      nextStep();
+    });
+
+    function showResults() {
+      choiceContainer.style.display = "none";
+      resultsEl.style.display = "block";
+      document.body.style.overflowY = "auto";
+      statusEl.style.display = "inline-flex";
+
+      const top5List = document.getElementById("top5-list");
+      const rankingList = document.getElementById("ranking-list");
+      top5List.innerHTML = "";
+      rankingList.innerHTML = "";
+
+      // Top 5
+      const top5 = sorted.slice(0, 5);
+      top5.forEach(idx => {
+        const li = document.createElement("li");
+        li.textContent = songs[idx].title;
+        top5List.appendChild(li);
+      });
+
+      // Full ranking
+      sorted.forEach(idx => {
+        const li = document.createElement("li");
+        li.textContent = songs[idx].title;
+        rankingList.appendChild(li);
+      });
+
+      statusEl.textContent = "ソート完了！";
+    }
+
+    document.getElementById("restart-btn").addEventListener("click", startSorter);
+
+  const downloadBtn = document.getElementById("download-top5");
+  downloadBtn.addEventListener("click", () => {
+    const top5El = document.getElementById("top5-container");
+    if (!top5El) return;
+
+    // Aim for an output height of about 2048px
+    const targetHeight = 2048;
+    const elementHeight = top5El.offsetHeight || 1;
+    const scale = targetHeight / elementHeight;
+
+    html2canvas(top5El, {
+      scale: scale,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: null
+    }).then(canvas => {
+      const link = document.createElement("a");
+      link.download = "ano_top5.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    }).catch(err => {
+      alert("画像の生成に失敗しました。もう一度試してください。");
+      console.error(err);
+    });
+  });
+
+  // Build tweet text from current Top 5
+  function buildTweetText() {
+    if (!sorted || sorted.length === 0) {
+      return "ano楽曲ソートをしました！\n#あのちゃん #anoソート";
+    }
+    const top5 = sorted.slice(0, 5).map(idx => songs[idx].title);
+    let text = "わたしのano楽曲TOP5\n";
+    top5.forEach((title, i) => {
+      text += `${i + 1}. ${title}\n`;
+    });
+    text += "\n#あのちゃん #ano #anoソート";
+    return text;
+  }
+
+  const sorterUrl = "https://example.com/ano-sorter"; // TODO: replace with your published URL
+  const tweetBtn = document.getElementById("tweet-top5");
+  tweetBtn.addEventListener("click", () => {
+    const text = encodeURIComponent(buildTweetText());
+    const urlParam = encodeURIComponent(sorterUrl);
+    const intentUrl = `https://twitter.com/intent/tweet?text=${text}&url=${urlParam}`;
+    window.open(intentUrl, "_blank");
+  });
+
+    // start: wait for user to press the intro button
+    const startBtn = document.getElementById("start-btn");
+    if (startBtn) {
+      startBtn.addEventListener("click", () => {
+        const intro = document.getElementById("intro-card");
+        if (intro) intro.style.display = "none";
+        const introStart = document.getElementById("intro-start");
+        if (introStart) introStart.style.display = "none";
+        choiceContainer.style.display = "flex";
+        startSorter();
+      });
+    }
+  </script>
+</body>
+</html>
