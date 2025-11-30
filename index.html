@@ -982,10 +982,7 @@ h1 {
     const top5El = document.getElementById("top5-container");
     if (!top5El) return;
     
-    const dpr = window.devicePixelRatio || 2;  // use screen density
-
     html2canvas(top5El, {
-      scale: dpr,
       useCORS: true,
       allowTaint: true,
       backgroundColor: null
