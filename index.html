@@ -1045,35 +1045,36 @@ h1 {
     // Draw text: title + Top5 list
     const top5 = sorted.slice(0, 5).map(idx => songs[idx].title);
 
-    // Common text settings
+    // Common settings
     ctx.fillStyle = "#ffffff";
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
 
-    // water-blue-ish glow
+    // Soft water-blue glow
     ctx.shadowColor = "rgba(173, 216, 230, 0.9)";
     ctx.shadowBlur = 20;
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 0;
 
-    // ✅ Title (50% larger)
+    // ⭐ Title — now 80% of previous size (was 97px → now 77px)
     ctx.font =
-      "700 129px -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic', system-ui, sans-serif";
+      "700 77px -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic', system-ui, sans-serif";
     ctx.fillText("My ano TOP5", 80, 150);
 
-    // ✅ Top 5 list (50% larger, aligned by title)
+    // ⭐ Top 5 list — same font size (56px), but bigger spacing
     ctx.font =
-      "500 75px -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic', system-ui, sans-serif";
+      "500 56px -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic', system-ui, sans-serif";
 
-    const startY = 330;       // first line
-    const lineHeight = 70;    // spacing between lines
-    const numberX = 100;      // where "1." "2." etc go
-    const titleX  = 210;      // where song titles start (aligned column)
+    const startY = 330;
+    const lineHeight = 85;   // was 70 — now more spacing
+
+    const numberX = 100;     // aligned numbers
+    const titleX  = 210;     // aligned titles
 
     top5.forEach((title, i) => {
       const y = startY + i * lineHeight;
-      ctx.fillText(`${i + 1}.`, numberX, y);  // draw number
-      ctx.fillText(title,      titleX,  y);   // draw title
+      ctx.fillText(`${i + 1}.`, numberX, y);
+      ctx.fillText(title,      titleX, y);
     });
 
     // Export
