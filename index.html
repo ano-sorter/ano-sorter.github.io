@@ -663,6 +663,16 @@ h1 {
       <ol id="top5-list"></ol>
     </div>
 
+    <!-- Hidden high-resolution canvas for poster export -->
+    <canvas
+      id="poster-canvas"
+      width="1420"
+      height="2190"
+      style="display: none;"
+    ></canvas>
+    
+    <button id="download-top5">📥 画像をダウンロード</button>
+
     <button id="download-top5">📥 画像をダウンロード</button>
     <button id="tweet-top5">𝕏 結果をツイート</button>
 
@@ -770,6 +780,9 @@ h1 {
     const uploadBgImg = document.getElementById("top5-upload-bg");
     const bgButtons = document.querySelectorAll(".bg-option");
 
+    // Track current preset background image (for canvas export)
+    let currentBgPath = "top5-background1.jpeg"; // default
+
     // State for user-uploaded background transforms
     let userBgScale = 1.0;
     let userBgOffsetY = 0; // in percentage relative to container
@@ -822,7 +835,7 @@ h1 {
       btn.addEventListener("click", () => {
         const bgPath = btn.dataset.bg;
         top5Container.style.backgroundImage = `url("${bgPath}")`;
-
+        currentBgPath = bgPath; // remember which preset bg is active
         // update selected highlight
         bgButtons.forEach(b => b.classList.remove("bg-selected"));
         btn.classList.add("bg-selected");
@@ -853,6 +866,7 @@ h1 {
           uploadBgImg.style.display = "block";
         }
         top5Container.style.backgroundImage = "none";
+        currentBgPath = null; // custom image, no preset bg
 
         // Remove highlight from preset backgrounds
         bgButtons.forEach(b => b.classList.remove("bg-selected"));
@@ -979,9 +993,23 @@ h1 {
 
   const downloadBtn = document.getElementById("download-top5");
   downloadBtn.addEventListener("click", () => {
+    const usingCustomBg =
+      uploadBgImg && uploadBgImg.style.display === "block" && uploadBgImg.src;
+
+    if (!currentBgPath || usingCustomBg) {
+      // Phase 1: for custom-uploaded backgrounds, still fall back to html2canvas
+      downloadTop5WithHtml2Canvas();
+    } else {
+      // For preset backgrounds, use sharp canvas export
+      downloadTop5WithCanvas(currentBgPath);
+    }
+  });
+
+  // Fallback: old html2canvas-based download (for uploaded images, Phase 1)
+  function downloadTop5WithHtml2Canvas() {
     const top5El = document.getElementById("top5-container");
     if (!top5El) return;
-    
+
     html2canvas(top5El, {
       useCORS: true,
       allowTaint: true,
@@ -995,8 +1023,65 @@ h1 {
       alert("画像の生成に失敗しました。もう一度試してください。");
       console.error(err);
     });
-  });
+  }
 
+  // New: high-res canvas export for preset backgrounds
+  function downloadTop5WithCanvas(bgPath) {
+    const canvas = document.getElementById("poster-canvas");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const width = canvas.width;
+    const height = canvas.height;
+
+    // Clear previous drawing
+    ctx.clearRect(0, 0, width, height);
+
+    const img = new Image();
+    img.src = bgPath;
+    img.onload = () => {
+      // Draw background to fill the canvas
+      ctx.drawImage(img, 0, 0, width, height);
+
+      // Draw text: title + Top5 list
+      const top5 = sorted.slice(0, 5).map(idx => songs[idx].title);
+
+      // Common text settings
+      ctx.fillStyle = "#ffffff";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "top";
+      ctx.shadowColor = "rgba(0, 0, 0, 0.65)";
+      ctx.shadowBlur = 18;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 6;
+
+      // Title
+      ctx.font =
+        "700 86px -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic', system-ui, sans-serif";
+      ctx.fillText("My ano TOP5", 120, 260);
+
+      // Top 5 list
+      ctx.font =
+        "500 50px -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic', system-ui, sans-serif";
+      const startY = 380;
+      const lineHeight = 80;
+
+      top5.forEach((title, i) => {
+        const y = startY + i * lineHeight;
+        ctx.fillText(`${i + 1}. ${title}`, 140, y);
+      });
+
+      // Export
+      const link = document.createElement("a");
+      link.download = "ano_top5.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    };
+
+    img.onerror = () => {
+      alert("背景画像の読み込みに失敗しました。もう一度試してください。");
+    };
+  }
+  
   // Build tweet text from current Top 5
   function buildTweetText() {
     if (!sorted || sorted.length === 0) {
