@@ -23,7 +23,7 @@
     font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic Medium", "YuGothic", system-ui, sans-serif;
     background: url("ano-background.jpeg") no-repeat center center fixed;
     background-size: cover;
-    padding: 60px 16px 40px;
+    padding: 40px 16px 40px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -306,6 +306,7 @@ h1 {
     margin: 0 0 6px;
     font-size: 19px;
     font-weight: 700;
+    color: #dff5ff;
     text-shadow:
       0 0 3px rgba(0, 0, 0, 0.55),
       0 0 6px rgba(173, 216, 230, 0.8);
@@ -313,15 +314,16 @@ h1 {
 
   #top5-list {
     position: absolute;
-    top: 80px;
+    top: 64px;
     left: 26px;
     z-index: 2;
     margin: 0;
     padding-left: 0;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 500;
     line-height: 1.5;
-    list-style-position: inside
+    list-style-position: inside;
+    color: #dff5ff;
     text-shadow:
       0 0 3px rgba(0, 0, 0, 0.55),
       0 0 6px rgba(173, 216, 230, 0.8);
@@ -673,8 +675,6 @@ h1 {
     ></canvas>
     
     <button id="download-top5">📥 画像をダウンロード</button>
-
-    <button id="download-top5">📥 画像をダウンロード</button>
     <button id="tweet-top5">𝕏 結果をツイート</button>
 
     <hr class="results-divider">
@@ -715,8 +715,6 @@ h1 {
     <button id="restart-btn">もう一度やる</button>
   </div>
 
-  <!-- html2canvas must be loaded BEFORE our script uses it -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
   <script>
     // 🎧 STEP 1 — Spotify Track IDs
@@ -808,16 +806,16 @@ h1 {
       });
 
       offsetYInput.addEventListener("input", () => {
-        // Map slider 0–100 to -20% to +20% for gentle movement
+        // Map slider 0–100 to about -40% to +40% for more movement
         const sliderVal = Number(offsetYInput.value);
-        userBgOffsetY = (sliderVal - 50) * 0.4;
+        userBgOffsetY = (sliderVal - 50) * 0.8;
         applyUserBgTransform();
       });
 
       offsetXInput.addEventListener("input", () => {
-        // Map slider 0–100 to -20% to +20% for gentle movement
+        // Map slider 0–100 to about -60% to +60% for even more movement
         const sliderVal = Number(offsetXInput.value);
-        userBgOffsetX = (sliderVal - 50) * 0.4;
+        userBgOffsetX = (sliderVal - 50) * 1.2;
         applyUserBgTransform();
       });
 
@@ -997,37 +995,17 @@ h1 {
     const usingCustomBg =
       uploadBgImg && uploadBgImg.style.display === "block" && uploadBgImg.src;
 
-    if (!currentBgPath || usingCustomBg) {
-      // Phase 1: for custom-uploaded backgrounds, still fall back to html2canvas
-      downloadTop5WithHtml2Canvas();
+    if (usingCustomBg) {
+      // Custom uploaded background: use canvas export with zoom/offset
+      downloadTop5WithCanvas(null, true);
     } else {
-      // For preset backgrounds, use sharp canvas export
-      downloadTop5WithCanvas(currentBgPath);
+      // Preset background: use canvas export with preset image
+      downloadTop5WithCanvas(currentBgPath, false);
     }
   });
 
-  // Fallback: old html2canvas-based download (for uploaded images, Phase 1)
-  function downloadTop5WithHtml2Canvas() {
-    const top5El = document.getElementById("top5-container");
-    if (!top5El) return;
-
-    html2canvas(top5El, {
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: null
-    }).then(canvas => {
-      const link = document.createElement("a");
-      link.download = "ano_top5.png";
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-    }).catch(err => {
-      alert("画像の生成に失敗しました。もう一度試してください。");
-      console.error(err);
-    });
-  }
-
-  // New: high-res canvas export for preset backgrounds
-  function downloadTop5WithCanvas(bgPath) {
+  // New: high-res canvas export for both preset and custom backgrounds
+  function downloadTop5WithCanvas(bgPath, isCustomBg) {
     const canvas = document.getElementById("poster-canvas");
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -1038,51 +1016,99 @@ h1 {
     ctx.clearRect(0, 0, width, height);
 
     const img = new Image();
-    img.src = bgPath;
+    // If using a custom uploaded background, draw from the uploaded <img> src
+    if (isCustomBg && uploadBgImg && uploadBgImg.src) {
+      img.src = uploadBgImg.src;
+    } else {
+      img.src = bgPath;
+    }
+
     img.onload = () => {
-      // Draw background to fill the canvas
-      ctx.drawImage(img, 0, 0, width, height);
+      // Draw background
+      if (isCustomBg && uploadBgImg && uploadBgImg.src) {
+        // Preserve aspect ratio, contain the entire image inside the canvas, and apply zoom/offset
+        const imgW = img.width;
+        const imgH = img.height;
 
-    // Draw text: title + Top5 list
-    const top5 = sorted.slice(0, 5).map(idx => songs[idx].title);
+        // Base scale: contain the entire image inside the canvas
+        const baseScale = Math.min(width / imgW, height / imgH);
+        const finalScale = baseScale * (userBgScale || 1.0);
 
-    // Common settings
-    ctx.fillStyle = "#ffffff";
-    ctx.textAlign = "left";
-    ctx.textBaseline = "top";
+        const drawW = imgW * finalScale;
+        const drawH = imgH * finalScale;
 
-    // Soft water-blue glow
-    ctx.shadowColor = "rgba(173, 216, 230, 0.9)";
-    ctx.shadowBlur = 20;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 0;
+        // Start centered
+        let dx = (width - drawW) / 2;
+        let dy = (height - drawH) / 2;
 
-    // ⭐ Title — now 80% of previous size (was 97px → now 77px)
-    ctx.font =
-      "700 85px -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic', system-ui, sans-serif";
-    ctx.fillText("My ano TOP5", 80, 160);
+        // Apply offsets (userBgOffsetX/Y are in roughly -40 to +40 range)
+        dx += (userBgOffsetX || 0) / 100 * width;
+        dy += (userBgOffsetY || 0) / 100 * height;
 
-    // ⭐ Top 5 list — same font size (56px), but bigger spacing
-    ctx.font =
-      "500 56px -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic', system-ui, sans-serif";
+        ctx.drawImage(img, dx, dy, drawW, drawH);
+      } else {
+        // Preset backgrounds: simple full draw
+        ctx.drawImage(img, 0, 0, width, height);
+      }
 
-    const startY = 330;
-    const lineHeight = 85;   // was 70 — now more spacing
+      // Draw text: title + Top5 list
+      const top5 = sorted.slice(0, 5).map(idx => songs[idx].title);
 
-    const numberX = 100;     // aligned numbers
-    const titleX  = 210;     // aligned titles
+      // Common settings
+      ctx.fillStyle = "#dff5ff"; // soft water-blue text
+      ctx.textAlign = "left";
+      ctx.textBaseline = "top";
 
-    top5.forEach((title, i) => {
-      const y = startY + i * lineHeight;
-      ctx.fillText(`${i + 1}.`, numberX, y);
-      ctx.fillText(title,      titleX, y);
-    });
+      const titleX = 80;
+      const titleY = 160;
 
-    // Export
-    const link = document.createElement("a");
-    link.download = "ano_top5.png";
-    link.href = canvas.toDataURL("image/png");
-    link.click();
+      // Title — draw twice to mimic dark + aqua glow like CSS
+      ctx.font =
+        "700 85px -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic', system-ui, sans-serif";
+
+      // Dark under-glow
+      ctx.shadowColor = "rgba(0, 0, 0, 0.6)";
+      ctx.shadowBlur = 18;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+      ctx.fillText("My ano TOP5", titleX, titleY);
+
+      // Light aqua outer glow
+      ctx.shadowColor = "rgba(173, 216, 230, 0.9)";
+      ctx.shadowBlur = 26;
+      ctx.fillText("My ano TOP5", titleX, titleY);
+
+      // Top 5 list — slightly larger font
+      ctx.font =
+        "500 60px -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic', system-ui, sans-serif";
+
+      const lineHeight = 90; // spacing between list lines
+      const startY = titleY + lineHeight * 1.5; // keep ~1.5× gap from title
+
+      const numberX = 100;
+      const titleXList  = 210;
+
+      top5.forEach((songTitle, i) => {
+        const y = startY + i * lineHeight;
+
+        // Dark under-glow for number + title
+        ctx.shadowColor = "rgba(0, 0, 0, 0.6)";
+        ctx.shadowBlur = 14;
+        ctx.fillText(`${i + 1}.`, numberX, y);
+        ctx.fillText(songTitle,  titleXList, y);
+
+        // Light aqua outer glow
+        ctx.shadowColor = "rgba(173, 216, 230, 0.9)";
+        ctx.shadowBlur = 22;
+        ctx.fillText(`${i + 1}.`, numberX, y);
+        ctx.fillText(songTitle,  titleXList, y);
+      });
+
+      // Export
+      const link = document.createElement("a");
+      link.download = "ano_top5.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
     };
 
     img.onerror = () => {
