@@ -786,7 +786,12 @@ h1 {
     // 🔧 sorter state
     let sorted = [];
     let currentIndex = 0;
+
+    // Binary insertion state for the current song
+    let insertionLow = 0;
+    let insertionHigh = 0;
     let compareIndex = 0;
+    let isFindingSpot = false;
 
     const leftTitle = document.getElementById("left-title");
     const rightTitle = document.getElementById("right-title");
@@ -929,7 +934,10 @@ h1 {
     function startSorter() {
       sorted = [];
       currentIndex = 0;
+      insertionLow = 0;
+      insertionHigh = 0;
       compareIndex = 0;
+      isFindingSpot = false;
       resultsEl.style.display = "none";
       choiceContainer.style.display = "flex";
       document.body.style.overflowY = "auto";
@@ -944,6 +952,7 @@ h1 {
         return;
       }
 
+      // First song goes straight into the sorted list
       if (sorted.length === 0) {
         sorted.push(currentIndex);
         currentIndex++;
@@ -951,13 +960,26 @@ h1 {
         return;
       }
 
-      if (compareIndex >= sorted.length) {
-        sorted.push(currentIndex);
+      // Start a new binary search for the current song's position
+      if (!isFindingSpot) {
+        insertionLow = 0;
+        insertionHigh = sorted.length;
+        isFindingSpot = true;
+      }
+
+      // When the search range is closed, insert the current song at insertionLow
+      if (insertionLow >= insertionHigh) {
+        sorted.splice(insertionLow, 0, currentIndex);
         currentIndex++;
+        insertionLow = 0;
+        insertionHigh = 0;
         compareIndex = 0;
+        isFindingSpot = false;
         nextStep();
         return;
       }
+
+      compareIndex = Math.floor((insertionLow + insertionHigh) / 2);
 
       const newSongIndex = currentIndex;
       const existSongIndex = sorted[compareIndex];
@@ -970,14 +992,14 @@ h1 {
     }
 
     document.getElementById("left-btn").addEventListener("click", () => {
-      sorted.splice(compareIndex, 0, currentIndex);
-      currentIndex++;
-      compareIndex = 0;
+      // User prefers the new song, so it belongs above the compared song
+      insertionHigh = compareIndex;
       nextStep();
     });
 
     document.getElementById("right-btn").addEventListener("click", () => {
-      compareIndex++;
+      // User prefers the existing ranked song, so the new song belongs below it
+      insertionLow = compareIndex + 1;
       nextStep();
     });
 
