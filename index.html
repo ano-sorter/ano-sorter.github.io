@@ -170,15 +170,38 @@ h1 {
 
   #status {
     display: none;
-    align-items: center;
+    flex-direction: column;
+    align-items: stretch;
     gap: 6px;
-    padding: 4px 10px;
-    border-radius: 999px;
+    width: min(320px, calc(100% - 20px));
+    box-sizing: border-box;
+    padding: 7px 10px;
+    border-radius: 12px;
     background: rgba(255, 255, 255, 0.85);
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
     font-size: 12px;
     color: #555;
     margin-bottom: 10px;
+  }
+
+  #status-text {
+    text-align: center;
+  }
+
+  #progress-track {
+    width: 100%;
+    height: 7px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(173, 216, 230, 0.28);
+  }
+
+  #progress-fill {
+    width: 0;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--ano-blue);
+    transition: width 0.25s ease;
   }
 
   #results {
@@ -206,6 +229,21 @@ h1 {
     margin: 0 0 12px;
     font-size: 12px;
     color: #777;
+  }
+
+  #community-share-status {
+    min-height: 1.4em;
+    margin: -5px 0 12px;
+    font-size: 11px;
+    color: #777;
+  }
+
+  #community-share-status.is-success {
+    color: #4f7f6d;
+  }
+
+  #community-share-status.is-error {
+    color: #a15f5f;
   }
 
   /* Background selector for Top 5 */
@@ -504,8 +542,37 @@ h1 {
     margin-top: 24px;
     margin-bottom: 10px;
     display: flex;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
     width: 100%;
+  }
+
+  .band-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.65);
+    color: #333;
+    font-size: 13px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .band-option input {
+    accent-color: var(--ano-blue);
+  }
+
+  .community-disclosure {
+    max-width: 540px;
+    margin: 12px 16px 0;
+    color: #666;
+    font-size: 11px;
+    line-height: 1.6;
+    text-align: center;
   }
 
   .primary-btn {
@@ -603,6 +670,14 @@ h1 {
   </div>
 
   <div id="intro-start">
+    <label class="band-option">
+      <input type="checkbox" id="include-band-songs" />
+      I'sの楽曲も含める 🎸
+    </label>
+    <p class="community-disclosure">
+      ソート完了時、ランキング結果（曲順と選択モード）が匿名のコミュニティ統計として自動送信されます。<br>
+      データベースに氏名やメールアドレスは保存しません。
+    </p>
     <button id="start-btn" class="primary-btn">Start!</button>
   </div>
 
@@ -624,11 +699,24 @@ h1 {
     </div>
   </div>
 
-  <div id="status"></div>
+  <div id="status">
+    <div id="status-text"></div>
+    <div
+      id="progress-track"
+      role="progressbar"
+      aria-label="ソート進捗"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      aria-valuenow="0"
+    >
+      <div id="progress-fill"></div>
+    </div>
+  </div>
 
   <div id="results">
     <h2>ソート結果</h2>
     <p id="results-subtext">Top 5 と全曲ランキングです。</p>
+    <p id="community-share-status" aria-live="polite"></p>
 
     <div id="bg-selector">
       <span class="bg-label">背景を選ぶ：</span>
@@ -737,8 +825,12 @@ h1 {
 
 
   <script>
+    const SUPABASE_URL = "https://scfredphnszkmyovhluz.supabase.co";
+    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_9eObVPGLl8QJjKvrTiobaw_amc5PuUe";
+    const APP_VERSION = "2026-09-08";
+
     // 🎧 STEP 1 — Spotify Track IDs
-    const songs = [
+    const soloSongs = [
       { title: "絶絶絶絶対聖域", spotifyId: "4OuvKDUkdSICPKJFApZXBP" },
       { title: "Bubble Me Face", spotifyId: "7HfZQXgBbZy3sg2lgIgFb1" },
       { title: "骨バキ☆ゆうぐれダイアリー", spotifyId: "0qhER15H8tJCkwzMUHCvP3" },
@@ -771,10 +863,31 @@ h1 {
       { title: "アパシー", spotifyId: "3Im9MR4nbirscm5I284FdR" },
       { title: "絶対小悪魔コーデ", spotifyId: "2cjV0mKofSWVUJIo6zYFQj" },
       { title: "F Wonderful World", spotifyId: "4P7FrPgQqjM6OVCbr0QMEn" },
-      { title: "イート・スリープ・エスケープ", spotifyId: "4lyQPShOCd69eyLh56S6HW" }
+      { title: "イート・スリープ・エスケープ", spotifyId: "4lyQPShOCd69eyLh56S6HW" },
+      { title: "ラブにダイブ", spotifyId: "7EnfUONqAHWRCyNRdoEBYC" },
+      { title: "貸しっぱなしデスティニー", spotifyId: "71xlmmNpMLE6tlnR8sWHdv" },
+      { title: "また帰ってきたケロッ！とマーチ", spotifyId: "5Mm8lWUFmdpEPM0yoRkXTM" },
     ];
-    // Shuffle the array so song order is different each session
-    shuffle(songs);
+
+    const bandSongs = [
+      { title: "DON'T COMMIT SUISIDE", spotifyId: "1SwcxRIEl2Eb4NvI3PSWW9" },
+      { title: "僕の春", spotifyId: "5m54sXl2810nlNFzLxMesy" },
+      { title: "プール・サイド・スーサイド", spotifyId: "3sOJ1KdRhD7jYym7AQEWE1" },
+      { title: "きるみーべびぃ", spotifyId: "5SWDVQejqeQ1UTYwusjMTJ" },
+      { title: "あなろぐめもりー。", spotifyId: "2OMDMk3NNvQYuLfmVw22US" },
+      { title: "はっぴーえんどろーる", spotifyId: "1Q9Vc0U3BQLNj2IkMna71B" },
+      { title: "不毛戦争", spotifyId: "1M1nYUAn3CRdDiAdiWw3Ko" },
+      { title: "アンダーすたんど--You!", spotifyId: "4xEiN4YG5t9ecF6p4KL4ym" },
+      { title: "背中", spotifyId: "47q32sGocs1IuKSSoXMji6" },
+      { title: "Don't@me", spotifyId: "26TAIXjE8actXtMDszk0Qp" },
+      { title: "永遠衝動", spotifyId: "5I2A6BkRvTve67HLQbK3WE" },
+      { title: "青虫", spotifyId: "6O0Hwk1PVYKArQVpw46JXJ" },
+      { title: "悪の花瓶", spotifyId: "7hgh0FgbAnm5zcTadNQA6R" },
+    ];
+
+    let songs = [];
+    let includesBandForCurrentSort = false;
+    let rankingSubmissionStarted = false;
 
     function shuffle(array) {
       for (let i = array.length - 1; i > 0; i--) {
@@ -798,6 +911,9 @@ h1 {
     const leftEmbed = document.getElementById("left-embed");
     const rightEmbed = document.getElementById("right-embed");
     const statusEl = document.getElementById("status");
+    const statusTextEl = document.getElementById("status-text");
+    const progressTrackEl = document.getElementById("progress-track");
+    const progressFillEl = document.getElementById("progress-fill");
     const choiceContainer = document.getElementById("choice-container");
     const resultsEl = document.getElementById("results");
 
@@ -932,17 +1048,33 @@ h1 {
     }
 
     function startSorter() {
+      const includeBandSongs = document.getElementById("include-band-songs");
+      includesBandForCurrentSort = Boolean(includeBandSongs && includeBandSongs.checked);
+      songs = [...soloSongs];
+      if (includesBandForCurrentSort) {
+        songs.push(...bandSongs);
+      }
+      shuffle(songs);
+
       sorted = [];
       currentIndex = 0;
       insertionLow = 0;
       insertionHigh = 0;
       compareIndex = 0;
       isFindingSpot = false;
+      rankingSubmissionStarted = false;
       resultsEl.style.display = "none";
       choiceContainer.style.display = "flex";
       document.body.style.overflowY = "auto";
-      statusEl.textContent = "";
+      statusTextEl.textContent = "";
+      progressFillEl.style.width = "0%";
+      progressTrackEl.setAttribute("aria-valuenow", "0");
       statusEl.style.display = "none";
+      const shareStatusEl = document.getElementById("community-share-status");
+      if (shareStatusEl) {
+        shareStatusEl.textContent = "";
+        shareStatusEl.className = "";
+      }
       nextStep();
     }
 
@@ -987,8 +1119,11 @@ h1 {
       loadSong("left", songs[newSongIndex]);
       loadSong("right", songs[existSongIndex]);
       
+      const progressPercent = Math.round(((currentIndex + 1) / songs.length) * 100);
       statusEl.style.display = "inline-flex";
-      statusEl.textContent = `${currentIndex + 1} / ${songs.length} 曲を比較中`;
+      statusTextEl.textContent = `${currentIndex + 1} / ${songs.length} 曲を比較中`;
+      progressFillEl.style.width = `${progressPercent}%`;
+      progressTrackEl.setAttribute("aria-valuenow", String(progressPercent));
     }
 
     document.getElementById("left-btn").addEventListener("click", () => {
@@ -1002,6 +1137,50 @@ h1 {
       insertionLow = compareIndex + 1;
       nextStep();
     });
+
+    async function submitRanking() {
+      if (rankingSubmissionStarted || sorted.length !== songs.length) return;
+
+      rankingSubmissionStarted = true;
+      const shareStatusEl = document.getElementById("community-share-status");
+
+      if (shareStatusEl) {
+        shareStatusEl.textContent = "コミュニティ統計に送信中…";
+        shareStatusEl.className = "";
+      }
+
+      const rankingIds = sorted.map(idx => songs[idx].spotifyId);
+
+      try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/submit_ranking`, {
+          method: "POST",
+          headers: {
+            "apikey": SUPABASE_PUBLISHABLE_KEY,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            p_ranking: rankingIds,
+            p_includes_band: includesBandForCurrentSort,
+            p_app_version: APP_VERSION
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Supabase request failed: ${response.status}`);
+        }
+
+        if (shareStatusEl) {
+          shareStatusEl.textContent = "ランキングを匿名のコミュニティ統計に共有しました。";
+          shareStatusEl.className = "is-success";
+        }
+      } catch (error) {
+        console.error("Could not submit ranking:", error);
+        if (shareStatusEl) {
+          shareStatusEl.textContent = "統計データを送信できませんでした。ランキング結果はそのまま利用できます。";
+          shareStatusEl.className = "is-error";
+        }
+      }
+    }
 
     function showResults() {
       choiceContainer.style.display = "none";
@@ -1029,10 +1208,36 @@ h1 {
         rankingList.appendChild(li);
       });
 
-      statusEl.textContent = "ソート完了！";
+      statusTextEl.textContent = "ソート完了！";
+      progressFillEl.style.width = "100%";
+      progressTrackEl.setAttribute("aria-valuenow", "100");
+      submitRanking();
     }
 
-    document.getElementById("restart-btn").addEventListener("click", startSorter);
+    document.getElementById("restart-btn").addEventListener("click", () => {
+      resultsEl.style.display = "none";
+      choiceContainer.style.display = "none";
+      statusEl.style.display = "none";
+      statusTextEl.textContent = "";
+      progressFillEl.style.width = "0%";
+      progressTrackEl.setAttribute("aria-valuenow", "0");
+      leftEmbed.src = "";
+      rightEmbed.src = "";
+
+      const shareStatusEl = document.getElementById("community-share-status");
+      if (shareStatusEl) {
+        shareStatusEl.textContent = "";
+        shareStatusEl.className = "";
+      }
+
+      const intro = document.getElementById("intro-card");
+      const introStart = document.getElementById("intro-start");
+      if (intro) intro.style.display = "block";
+      if (introStart) introStart.style.display = "flex";
+
+      document.body.style.overflowY = "auto";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
 
   const downloadBtn = document.getElementById("download-top5");
   downloadBtn.addEventListener("click", () => {
