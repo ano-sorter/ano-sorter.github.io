@@ -41,7 +41,7 @@
 
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic Medium", "YuGothic", system-ui, sans-serif;
-    background: url("ano-background.jpg") no-repeat center center fixed;
+    background: url("ano-background.jpeg") no-repeat center center fixed;
     background-size: cover;
     padding: 40px 16px 40px;
     display: flex;
@@ -229,6 +229,8 @@ h1 {
     margin: 0 0 12px;
     font-size: 12px;
     color: #777;
+    width: 100%;
+    text-align: center;
   }
 
   #community-share-status {
@@ -236,6 +238,8 @@ h1 {
     margin: -5px 0 12px;
     font-size: 11px;
     color: #777;
+    width: 100%;
+    text-align: center;
   }
 
   #community-share-status.is-success {
@@ -420,6 +424,67 @@ h1 {
     border: none;
     border-top: 1px dashed rgba(0, 0, 0, 0.1);
     margin: 10px 0 12px;
+  }
+
+  #community-stats-container {
+    margin-top: 14px;
+    padding: 14px;
+    border: 1px solid rgba(173, 216, 230, 0.55);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.55);
+  }
+
+  #community-stats-container h3 {
+    margin: 0;
+    color: #2f6d80;
+    font-size: 15px;
+    text-align: center;
+  }
+
+  #community-stats-summary {
+    margin: 5px 0 10px;
+    max-width: none;
+    color: #666;
+    font-size: 11px;
+    text-align: center;
+  }
+
+  #community-stats-summary.is-error {
+    color: #a15f5f;
+  }
+
+  #community-stats-list {
+    margin: 0;
+    padding-left: 30px;
+    font-size: 12px;
+  }
+
+  #community-stats-list li {
+    padding: 5px 0;
+    border-bottom: 1px dashed rgba(0, 0, 0, 0.08);
+  }
+
+  #community-stats-list li:last-child {
+    border-bottom: none;
+  }
+
+  .community-song-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .community-song-title {
+    color: #333;
+    font-weight: 600;
+  }
+
+  .community-song-meta {
+    flex-shrink: 0;
+    color: #777;
+    font-size: 10px;
+    white-space: nowrap;
   }
 
   #disclaimer {
@@ -792,6 +857,14 @@ h1 {
       <ol id="ranking-list"></ol>
     </div>
 
+    <hr class="results-divider">
+
+    <section id="community-stats-container" aria-labelledby="community-stats-heading">
+      <h3 id="community-stats-heading">みんなの人気曲 TOP10</h3>
+      <p id="community-stats-summary" aria-live="polite">集計データを読み込んでいます…</p>
+      <ol id="community-stats-list"></ol>
+    </section>
+
     <div id="disclaimer">
       <p>
         このサイトは、あのちゃんが好きなファンが個人的に作った非公式ツールです。<br>
@@ -884,6 +957,10 @@ h1 {
       { title: "青虫", spotifyId: "6O0Hwk1PVYKArQVpw46JXJ" },
       { title: "悪の花瓶", spotifyId: "7hgh0FgbAnm5zcTadNQA6R" },
     ];
+
+    const songsBySpotifyId = new Map(
+      [...soloSongs, ...bandSongs].map(song => [song.spotifyId, song])
+    );
 
     let songs = [];
     let includesBandForCurrentSort = false;
@@ -1075,6 +1152,13 @@ h1 {
         shareStatusEl.textContent = "";
         shareStatusEl.className = "";
       }
+      const communityStatsSummaryEl = document.getElementById("community-stats-summary");
+      const communityStatsListEl = document.getElementById("community-stats-list");
+      if (communityStatsSummaryEl) {
+        communityStatsSummaryEl.textContent = "集計データを読み込んでいます…";
+        communityStatsSummaryEl.className = "";
+      }
+      if (communityStatsListEl) communityStatsListEl.innerHTML = "";
       nextStep();
     }
 
@@ -1182,6 +1266,68 @@ h1 {
       }
     }
 
+    async function loadCommunityStats() {
+      const summaryEl = document.getElementById("community-stats-summary");
+      const listEl = document.getElementById("community-stats-list");
+      if (!summaryEl || !listEl) return;
+
+      summaryEl.textContent = "集計データを読み込んでいます…";
+      summaryEl.className = "";
+      listEl.innerHTML = "";
+
+      try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_community_stats`, {
+          method: "POST",
+          headers: {
+            "apikey": SUPABASE_PUBLISHABLE_KEY,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            p_includes_band: includesBandForCurrentSort
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Supabase request failed: ${response.status}`);
+        }
+
+        const stats = await response.json();
+        if (!Array.isArray(stats) || stats.length === 0) {
+          summaryEl.textContent = "このモードの集計データはまだありません。";
+          return;
+        }
+
+        const submissionCount = Number(stats[0].ranking_count) || 0;
+        const modeLabel = includesBandForCurrentSort ? "I's楽曲を含む" : "ano楽曲のみ";
+        summaryEl.textContent = `${modeLabel}・${submissionCount}件のランキングから集計`;
+
+        stats.forEach(stat => {
+          const song = songsBySpotifyId.get(stat.spotify_id);
+          if (!song) return;
+
+          const li = document.createElement("li");
+          const row = document.createElement("div");
+          const title = document.createElement("span");
+          const meta = document.createElement("span");
+
+          row.className = "community-song-row";
+          title.className = "community-song-title";
+          meta.className = "community-song-meta";
+          title.textContent = song.title;
+          meta.textContent = `平均 ${Number(stat.average_rank).toFixed(1)}位・1位票 ${stat.first_place_votes}`;
+
+          row.appendChild(title);
+          row.appendChild(meta);
+          li.appendChild(row);
+          listEl.appendChild(li);
+        });
+      } catch (error) {
+        console.error("Could not load community stats:", error);
+        summaryEl.textContent = "コミュニティ統計を読み込めませんでした。";
+        summaryEl.className = "is-error";
+      }
+    }
+
     function showResults() {
       choiceContainer.style.display = "none";
       resultsEl.style.display = "block";
@@ -1211,7 +1357,7 @@ h1 {
       statusTextEl.textContent = "ソート完了！";
       progressFillEl.style.width = "100%";
       progressTrackEl.setAttribute("aria-valuenow", "100");
-      submitRanking();
+      submitRanking().then(loadCommunityStats);
     }
 
     document.getElementById("restart-btn").addEventListener("click", () => {
@@ -1229,6 +1375,14 @@ h1 {
         shareStatusEl.textContent = "";
         shareStatusEl.className = "";
       }
+
+      const communityStatsSummaryEl = document.getElementById("community-stats-summary");
+      const communityStatsListEl = document.getElementById("community-stats-list");
+      if (communityStatsSummaryEl) {
+        communityStatsSummaryEl.textContent = "集計データを読み込んでいます…";
+        communityStatsSummaryEl.className = "";
+      }
+      if (communityStatsListEl) communityStatsListEl.innerHTML = "";
 
       const intro = document.getElementById("intro-card");
       const introStart = document.getElementById("intro-start");
