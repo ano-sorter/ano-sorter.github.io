@@ -923,7 +923,10 @@
   }
 
   #restart-btn {
+    display: block;
     margin-top: 14px;
+    margin-right: auto;
+    margin-left: auto;
     padding: 8px 16px;
     border-radius: 999px;
     border: 1px solid #ccc;
@@ -1169,6 +1172,8 @@
     #language-picker {
       width: 340px;
       max-width: calc(100% - 12px);
+      margin-right: auto;
+      margin-left: auto;
       box-sizing: border-box;
     }
 
@@ -1179,6 +1184,12 @@
     #choice-container,
     #results {
       max-width: 100%;
+    }
+
+    #choice-container {
+      align-items: center;
+      margin-right: auto;
+      margin-left: auto;
     }
 
     #results {
@@ -1192,7 +1203,7 @@
       width: 100%;
       height: auto;
       min-height: 142px;
-      margin-top: 24px;
+      margin: 24px auto 20px;
     }
 
     #intro-start {
@@ -1202,21 +1213,90 @@
     .setup-panel {
       width: calc(100% - 24px);
       height: auto;
+      margin-right: auto;
+      margin-left: auto;
     }
 
     #session-actions {
       width: calc(100% - 24px);
       min-height: 102px;
+      margin-right: auto;
+      margin-left: auto;
     }
 
     .community-disclosure {
       width: calc(100% - 32px);
       height: auto;
       min-height: 76px;
+      margin: 12px auto 0;
     }
 
     .card {
+      width: 100%;
+      max-width: 100%;
+      margin-right: auto;
+      margin-left: auto;
       padding: 12px;
+      box-sizing: border-box;
+    }
+
+    #status,
+    #top5-text-controls,
+    #community-stats-container {
+      margin-right: auto;
+      margin-left: auto;
+    }
+
+    .session-buttons,
+    .result-share-actions,
+    .social-pills {
+      width: 100%;
+      margin-right: auto;
+      margin-left: auto;
+      justify-content: center;
+      box-sizing: border-box;
+    }
+
+    .session-btn {
+      flex: 1 1 120px;
+      max-width: 180px;
+      text-align: center;
+    }
+
+    .result-share-btn {
+      flex: 1 1 120px;
+      max-width: 150px;
+      text-align: center;
+    }
+
+    .social-pills {
+      max-width: 310px;
+    }
+
+    .social-pill {
+      flex: 1 1 120px;
+      justify-content: center;
+      max-width: 150px;
+      min-height: 30px;
+      box-sizing: border-box;
+    }
+
+    #community-stats-list {
+      padding-left: 24px;
+    }
+
+    .community-song-row {
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-start;
+      gap: 2px;
+    }
+
+    .community-song-title,
+    .community-song-meta {
+      width: 100%;
+      line-height: 1.35;
+      white-space: normal;
     }
 
     /* Center the Top 5 poster on phone */
@@ -1609,7 +1689,7 @@
         start: "Start",
         previousResult: "View previous result",
         spotifyPlayer: "Spotify player",
-        preferThis: "I like this better!",
+        preferThis: "I prefer this one!",
         fullMode: "Full mode",
         top20Mode: "TOP 20 mode",
         estimated: "Estimated {percent}%",
