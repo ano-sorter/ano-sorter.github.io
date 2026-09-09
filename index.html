@@ -1582,7 +1582,7 @@
         shareError: "統計データを送信できませんでした。ランキング結果はそのまま利用できます。",
         noStats: "このモードの集計データはまだありません。",
         statsSummary: "{pool}・{count}件のランキングから集計",
-        communityMeta: "{points}pt・1位票 {firstVotes}・TOP10入り {appearances}回",
+        communityMeta: "1位票 {firstVotes}・TOP10入り {appearances}回",
         statsError: "コミュニティ統計を読み込めませんでした。",
         previousResultStatus: "前回保存した結果を表示しています。",
         backgroundLoadError: "背景画像の読み込みに失敗しました。もう一度試してください。",
@@ -1609,7 +1609,7 @@
         start: "Start",
         previousResult: "View previous result",
         spotifyPlayer: "Spotify player",
-        preferThis: "I prefer this one!",
+        preferThis: "I like this better!",
         fullMode: "Full mode",
         top20Mode: "TOP 20 mode",
         estimated: "Estimated {percent}%",
@@ -1653,7 +1653,7 @@
         shareError: "The statistics could not be submitted. You can still use your ranking result.",
         noStats: "There are no community statistics for this mode yet.",
         statsSummary: "{pool} · Based on {count} rankings",
-        communityMeta: "{points} pts · #1 votes {firstVotes} · TOP 10 appearances {appearances}",
+        communityMeta: "#1 votes {firstVotes} · TOP 10 appearances {appearances}",
         statsError: "Community statistics could not be loaded.",
         previousResultStatus: "Showing your previously saved result.",
         backgroundLoadError: "The background image could not be loaded. Please try again.",
@@ -1724,7 +1724,7 @@
         shareError: "無法傳送統計資料，你仍可正常使用排名結果。",
         noStats: "這個模式暫時沒有社群統計。",
         statsSummary: "{pool}・根據{count}份排名統計",
-        communityMeta: "{points}分・第1名票數 {firstVotes}・進入TOP10 {appearances}次",
+        communityMeta: "第1名票數 {firstVotes}・進入TOP10 {appearances}次",
         statsError: "無法載入社群統計。",
         previousResultStatus: "正在顯示上次儲存的結果。",
         backgroundLoadError: "無法載入背景圖片，請再試一次。",
@@ -2975,7 +2975,6 @@
           meta.className = "community-song-meta";
           title.textContent = song.title;
           meta.textContent = translate("communityMeta", {
-            points: stat.top10_points,
             firstVotes: stat.first_place_votes,
             appearances: stat.top10_appearances
           });
