@@ -373,6 +373,114 @@
     box-sizing: border-box;
   }
 
+  #community-view {
+    display: none;
+    width: 100%;
+    max-width: 650px;
+    margin-top: 20px;
+    padding: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    border-radius: 18px;
+    background: var(--panel-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
+    box-sizing: border-box;
+  }
+
+  .community-view-heading {
+    margin-bottom: 14px;
+    padding: 12px;
+    border: 1px solid rgba(117, 180, 196, 0.42);
+    border-radius: 14px;
+    background: var(--panel-bg);
+    text-align: center;
+  }
+
+  .community-view-heading h2 {
+    margin: 0 0 5px;
+    font-size: 20px;
+  }
+
+  .community-view-heading p {
+    margin: 0;
+    max-width: none;
+    font-size: 12px;
+  }
+
+  .community-pool-label {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--text-light);
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .community-pool-switch {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .community-pool-btn {
+    min-height: 42px;
+    padding: 8px 10px;
+    border: 1px solid rgba(173, 216, 230, 0.75);
+    border-radius: 12px;
+    background: var(--panel-bg);
+    color: var(--text-main);
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .community-pool-btn.is-active {
+    border-color: var(--ano-blue-deep);
+    background: var(--ano-blue-soft);
+    box-shadow: 0 0 0 2px rgba(173, 216, 230, 0.28);
+    font-weight: 700;
+  }
+
+  #community-view-stats {
+    padding: 14px;
+    border: 1px solid rgba(173, 216, 230, 0.55);
+    border-radius: 14px;
+    background: var(--panel-bg);
+  }
+
+  #community-view-summary {
+    margin: 0 0 10px;
+    max-width: none;
+    color: var(--text-main);
+    font-size: 11px;
+    text-align: center;
+  }
+
+  #community-view-summary.is-error {
+    color: #a15f5f;
+  }
+
+  #community-view-list {
+    margin: 0;
+    padding-left: 30px;
+    font-size: 12px;
+  }
+
+  #community-view-list li {
+    padding: 7px 0;
+    border-bottom: 1px dashed rgba(0, 0, 0, 0.08);
+  }
+
+  #community-view-list li:last-child {
+    border-bottom: none;
+  }
+
+  #community-back-btn {
+    display: block;
+    margin: 16px auto 0;
+  }
+
   .results-heading-block {
     display: flex;
     flex-direction: column;
@@ -607,6 +715,50 @@
     box-sizing: border-box;
   }
 
+  .poster-name-field {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 8px;
+    color: var(--text-main);
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  #poster-name-input {
+    width: min(260px, 100%);
+    padding: 7px 10px;
+    border: 1px solid rgba(117, 180, 196, 0.65);
+    border-radius: 999px;
+    outline: none;
+    background: rgba(255, 255, 255, 0.84);
+    color: var(--text-main);
+    font: inherit;
+    font-weight: 500;
+    text-align: center;
+    box-sizing: border-box;
+  }
+
+  #poster-name-input:focus {
+    border-color: var(--ano-blue-deep);
+    box-shadow: 0 0 0 2px rgba(173, 216, 230, 0.35);
+  }
+
+  .poster-name-hint {
+    margin: 0 0 10px;
+    max-width: none;
+    color: var(--text-main);
+    font-size: 10px;
+    line-height: 1.4;
+  }
+
+  .poster-controls-divider {
+    height: 1px;
+    margin: 0 0 8px;
+    background: rgba(117, 180, 196, 0.3);
+  }
+
   .top5-text-label {
     display: block;
     margin-bottom: 2px;
@@ -699,8 +851,11 @@
 
   #top5-container h3 {
     margin: 0 0 6px;
+    max-width: 100%;
     font-size: 19px;
+    line-height: 1.15;
     font-weight: 700;
+    overflow-wrap: anywhere;
     color: #dff5ff;
     text-shadow:
       0 0 3px rgba(0, 0, 0, 0.55),
@@ -1070,6 +1225,12 @@
     margin-top: 10px;
   }
 
+  #community-view-btn {
+    min-width: 190px;
+    margin-top: 10px;
+    background: rgba(255, 255, 255, 0.88);
+  }
+
   .setup-group {
     margin: 0;
     padding: 0;
@@ -1209,7 +1370,8 @@
     }
 
     #choice-container,
-    #results {
+    #results,
+    #community-view {
       max-width: 100%;
     }
 
@@ -1224,6 +1386,16 @@
       margin: 0 auto;
       box-sizing: border-box;
       overflow-x: hidden;
+    }
+
+    #community-view {
+      width: 100%;
+      margin: 0 auto;
+      overflow-x: hidden;
+    }
+
+    .community-pool-switch {
+      grid-template-columns: 1fr;
     }
 
     #intro-card {
@@ -1312,6 +1484,10 @@
       padding-left: 24px;
     }
 
+    #community-view-list {
+      padding-left: 24px;
+    }
+
     .community-song-row {
       flex-direction: column;
       align-items: flex-start;
@@ -1333,7 +1509,8 @@
 
     .card,
     #intro-card,
-    #results {
+    #results,
+    #community-view {
       backdrop-filter: none !important;
       -webkit-backdrop-filter: none !important;
       background: var(--panel-bg);
@@ -1409,6 +1586,24 @@
     </p>
     <button id="start-btn" class="primary-btn" data-i18n="start">Start</button>
     <button id="previous-result-btn" class="session-btn" type="button" hidden data-i18n="previousResult">前回の結果を見る</button>
+    <button id="community-view-btn" class="session-btn" type="button" data-i18n="communityViewButton">みんなの人気曲を見る</button>
+  </div>
+
+  <div id="community-view">
+    <div class="community-view-heading">
+      <h2 data-i18n="communityHeading">みんなの人気曲</h2>
+      <p data-i18n="communityViewIntro">みんなのランキング結果から集計した人気曲です。</p>
+    </div>
+    <span class="community-pool-label" data-i18n="communityPoolLabel">表示する楽曲</span>
+    <div class="community-pool-switch" role="group" aria-label="表示する楽曲" data-i18n-aria-label="communityPoolLabel">
+      <button id="community-solo-btn" class="community-pool-btn is-active" type="button" aria-pressed="true" data-i18n="poolSolo">anoソロ楽曲のみ</button>
+      <button id="community-band-btn" class="community-pool-btn" type="button" aria-pressed="false" data-i18n="poolBand">I'sの楽曲を含む</button>
+    </div>
+    <section id="community-view-stats" aria-live="polite">
+      <p id="community-view-summary" data-i18n="statsLoading">集計データを読み込んでいます…</p>
+      <ol id="community-view-list"></ol>
+    </section>
+    <button id="community-back-btn" class="session-btn" type="button" data-i18n="backHome">トップへ戻る</button>
   </div>
 
   <div id="choice-container">
@@ -1553,6 +1748,12 @@
     </div>
 
     <div id="top5-text-controls">
+      <label class="poster-name-field" for="poster-name-input">
+        <span data-i18n="posterNameLabel">名前を入れる（任意）</span>
+        <input id="poster-name-input" type="text" maxlength="20" autocomplete="off" data-i18n-placeholder="posterNamePlaceholder" placeholder="名前" />
+      </label>
+      <p class="poster-name-hint" data-i18n="posterNameHint">入力した名前は画像にだけ表示され、統計には送信されません。</p>
+      <div class="poster-controls-divider" aria-hidden="true"></div>
       <span class="top5-text-label" data-i18n="textLayoutLabel">TOP5の位置とサイズ</span>
       <p class="top5-text-hint" data-i18n="textLayoutHint">ポスター内の文字をドラッグして移動できます。</p>
       <div class="top5-text-control-row">
@@ -1567,7 +1768,7 @@
     <div id="top5-container">
       <img id="top5-upload-bg" alt="" />
       <div id="top5-text-group">
-        <h3 data-i18n="posterTitle">My ano TOP5</h3>
+        <h3 id="poster-title" data-i18n="posterTitle">My ano TOP5</h3>
         <ol id="top5-list"></ol>
       </div>
     </div>
@@ -1646,7 +1847,7 @@
   <script>
     const SUPABASE_URL = "https://scfredphnszkmyovhluz.supabase.co";
     const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_9eObVPGLl8QJjKvrTiobaw_amc5PuUe";
-    const APP_VERSION = "2.0-batch4-ui3";
+    const APP_VERSION = "2.0-batch4-ui4";
     const STORAGE_VERSION = 3;
     const ACTIVE_SESSION_KEY = "anoSorterV2.activeSession";
     const COMPLETED_RESULT_KEY = "anoSorterV2.completedResult";
@@ -1674,6 +1875,10 @@
         disclosureHtml: "ソート完了時、ランキング結果（曲順と選択モード）は匿名のコミュニティ統計として自動送信されます。<br>データベースに氏名やメールアドレスは保存しません。",
         start: "Start",
         previousResult: "前回の結果を見る",
+        communityViewButton: "みんなの人気曲を見る",
+        communityViewIntro: "みんなのランキング結果から集計した人気曲です。",
+        communityPoolLabel: "表示する楽曲",
+        backHome: "トップへ戻る",
         spotifyPlayer: "Spotifyプレーヤー",
         preferThis: "こっちが好き！",
         fullMode: "全曲モード",
@@ -1698,6 +1903,10 @@
         textSize: "サイズ：",
         textReset: "位置とサイズをリセット",
         posterTitle: "My ano TOP5",
+        posterNamedTitle: "{name} の ano TOP5",
+        posterNameLabel: "名前を入れる（任意）",
+        posterNamePlaceholder: "名前",
+        posterNameHint: "入力した名前は画像にだけ表示され、統計には送信されません。",
         downloadImage: "📥 画像をダウンロード",
         shareOnX: "𝕏 結果をシェア",
         shareOnThreads: "@ Threadsでシェア",
@@ -1747,6 +1956,10 @@
         disclosureHtml: "When sorting is complete, your ranking (song order and selected mode) is automatically submitted to the anonymous community statistics.<br>No names or email addresses are stored in the database.",
         start: "Start",
         previousResult: "View previous result",
+        communityViewButton: "View community favorites",
+        communityViewIntro: "Popular songs based on everyone's submitted rankings.",
+        communityPoolLabel: "Songs to show",
+        backHome: "Back to home",
         spotifyPlayer: "Spotify player",
         preferThis: "I like this one!",
         fullMode: "Full mode",
@@ -1771,6 +1984,10 @@
         textSize: "Size:",
         textReset: "Reset position and size",
         posterTitle: "My ano TOP 5",
+        posterNamedTitle: "{name}'s ano TOP 5",
+        posterNameLabel: "Add your name (optional)",
+        posterNamePlaceholder: "Your name",
+        posterNameHint: "Your name appears only on the poster and is not sent to the statistics.",
         downloadImage: "📥 Download image",
         shareOnX: "𝕏 Share result",
         shareOnThreads: "@ Share on Threads",
@@ -1820,6 +2037,10 @@
         disclosureHtml: "完成排序後，排名結果（歌曲順序和所選模式）會自動以匿名方式傳送至社群統計。<br>資料庫不會儲存姓名或電子郵件地址。",
         start: "開始",
         previousResult: "查看上次結果",
+        communityViewButton: "查看大家的熱門歌曲",
+        communityViewIntro: "根據大家提交的排名結果統計出的熱門歌曲。",
+        communityPoolLabel: "顯示的歌曲範圍",
+        backHome: "返回首頁",
         spotifyPlayer: "Spotify播放器",
         preferThis: "我喜歡這首！",
         fullMode: "全曲模式",
@@ -1844,6 +2065,10 @@
         textSize: "大小：",
         textReset: "重設位置和大小",
         posterTitle: "My ano TOP5",
+        posterNamedTitle: "{name}的ano TOP5",
+        posterNameLabel: "加入你的名字（選填）",
+        posterNamePlaceholder: "你的名字",
+        posterNameHint: "名字只會顯示在海報上，不會傳送至統計資料。",
         downloadImage: "📥 下載圖片",
         shareOnX: "𝕏 分享結果",
         shareOnThreads: "@ 分享到Threads",
@@ -1979,6 +2204,8 @@
     let rankingModeForCurrentSort = "full";
     let rankingSubmissionStarted = false;
     let undoSnapshot = null;
+    let communityViewIncludesBand = false;
+    let posterName = "";
 
     function shuffle(array) {
       for (let i = array.length - 1; i > 0; i--) {
@@ -2025,6 +2252,11 @@
     const sessionSummaryEl = document.getElementById("session-summary");
     const startBtn = document.getElementById("start-btn");
     const previousResultBtn = document.getElementById("previous-result-btn");
+    const communityViewBtn = document.getElementById("community-view-btn");
+    const communityViewEl = document.getElementById("community-view");
+    const communitySoloBtn = document.getElementById("community-solo-btn");
+    const communityBandBtn = document.getElementById("community-band-btn");
+    const communityBackBtn = document.getElementById("community-back-btn");
     const languagePickerEl = document.getElementById("language-picker");
     const languageButtons = document.querySelectorAll(".language-btn");
 
@@ -2053,6 +2285,12 @@
       document.querySelectorAll("[data-i18n-title]").forEach((element) => {
         element.setAttribute("title", translate(element.dataset.i18nTitle));
       });
+      document.querySelectorAll("[data-i18n-placeholder]").forEach((element) => {
+        element.setAttribute("placeholder", translate(element.dataset.i18nPlaceholder));
+      });
+      document.querySelectorAll("[data-i18n-placeholder]").forEach((element) => {
+        element.setAttribute("placeholder", translate(element.dataset.i18nPlaceholder));
+      });
       document.querySelectorAll(".bg-option").forEach((button, index) => {
         button.setAttribute("aria-label", translate("backgroundNumber", { number: index + 1 }));
       });
@@ -2066,7 +2304,10 @@
         button.setAttribute("aria-pressed", String(isActive));
       });
 
-      setTimeout(applyPosterTextTransform, 0);
+      setTimeout(() => {
+        updatePosterTitle();
+        applyPosterTextTransform();
+      }, 0);
 
       if (save) {
         try {
@@ -2294,12 +2535,57 @@
       document.body.classList.remove("results-screen");
       introEl.style.display = "none";
       introStartEl.style.display = "none";
+      communityViewEl.style.display = "none";
       resultsEl.style.display = "none";
       choiceContainer.style.display = "flex";
       sorterControlsEl.style.display = "flex";
       if (languagePickerEl) languagePickerEl.hidden = true;
       document.body.style.overflowY = "auto";
     }
+
+    function setCommunityViewPool(includesBand) {
+      communityViewIncludesBand = Boolean(includesBand);
+      communitySoloBtn.classList.toggle("is-active", !communityViewIncludesBand);
+      communityBandBtn.classList.toggle("is-active", communityViewIncludesBand);
+      communitySoloBtn.setAttribute("aria-pressed", String(!communityViewIncludesBand));
+      communityBandBtn.setAttribute("aria-pressed", String(communityViewIncludesBand));
+
+      loadCommunityStats({
+        summaryEl: document.getElementById("community-view-summary"),
+        listEl: document.getElementById("community-view-list"),
+        includesBand: communityViewIncludesBand
+      });
+    }
+
+    function showCommunityView() {
+      document.body.classList.remove("results-screen");
+      introEl.style.display = "none";
+      introStartEl.style.display = "none";
+      choiceContainer.style.display = "none";
+      sorterControlsEl.style.display = "none";
+      statusEl.style.display = "none";
+      resultsEl.style.display = "none";
+      communityViewEl.style.display = "block";
+      if (languagePickerEl) languagePickerEl.hidden = true;
+      document.body.style.overflowY = "auto";
+      setCommunityViewPool(communityViewIncludesBand);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function returnToHome() {
+      communityViewEl.style.display = "none";
+      introEl.style.display = "block";
+      introStartEl.style.display = "flex";
+      if (languagePickerEl) languagePickerEl.hidden = false;
+      updateHomeActions();
+      document.body.style.overflowY = "auto";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    communityViewBtn.addEventListener("click", showCommunityView);
+    communitySoloBtn.addEventListener("click", () => setCommunityViewPool(false));
+    communityBandBtn.addEventListener("click", () => setCommunityViewPool(true));
+    document.getElementById("community-back-btn").addEventListener("click", returnToHome);
 
     // Top 5 background selector
     const top5Container = document.getElementById("top5-container");
@@ -2314,6 +2600,27 @@
     const top5TextGroup = document.getElementById("top5-text-group");
     const top5TextSizeInput = document.getElementById("top5-text-size");
     const top5TextResetBtn = document.getElementById("top5-text-reset");
+    const posterNameInput = document.getElementById("poster-name-input");
+    const posterTitleEl = document.getElementById("poster-title");
+
+    function getPosterTitle() {
+      const name = posterName.trim();
+      return name
+        ? translate("posterNamedTitle", { name })
+        : translate("posterTitle");
+    }
+
+    function updatePosterTitle() {
+      if (posterTitleEl) posterTitleEl.textContent = getPosterTitle();
+    }
+
+    if (posterNameInput) {
+      posterNameInput.addEventListener("input", () => {
+        posterName = posterNameInput.value.slice(0, 20);
+        updatePosterTitle();
+        applyPosterTextTransform();
+      });
+    }
 
     // Track current preset background image (for canvas export)
     let currentBgPath = "top5-background1.jpeg"; // default
@@ -2774,6 +3081,7 @@
 
     function startSorter() {
       document.body.classList.remove("results-screen");
+      communityViewEl.style.display = "none";
       const selectedRankingMode = document.querySelector('input[name="ranking-mode"]:checked');
       const selectedSongPool = document.querySelector('input[name="song-pool"]:checked');
 
@@ -3089,9 +3397,11 @@
       }
     }
 
-    async function loadCommunityStats() {
-      const summaryEl = document.getElementById("community-stats-summary");
-      const listEl = document.getElementById("community-stats-list");
+    async function loadCommunityStats({
+      summaryEl = document.getElementById("community-stats-summary"),
+      listEl = document.getElementById("community-stats-list"),
+      includesBand = includesBandForCurrentSort
+    } = {}) {
       if (!summaryEl || !listEl) return;
 
       summaryEl.textContent = translate("statsLoading");
@@ -3106,7 +3416,7 @@
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            p_includes_band: includesBandForCurrentSort
+            p_includes_band: includesBand
           })
         });
 
@@ -3121,7 +3431,7 @@
         }
 
         const submissionCount = Number(stats[0].ranking_count) || 0;
-        const modeLabel = includesBandForCurrentSort ? translate("poolBand") : translate("poolSolo");
+        const modeLabel = includesBand ? translate("poolBand") : translate("poolSolo");
         summaryEl.textContent = translate("statsSummary", {
           pool: modeLabel,
           count: submissionCount
@@ -3159,6 +3469,7 @@
 
     function showResults({ fromSaved = false } = {}) {
       document.body.classList.add("results-screen");
+      communityViewEl.style.display = "none";
       choiceContainer.style.display = "none";
       sorterControlsEl.style.display = "none";
       resultsEl.style.display = "block";
@@ -3224,6 +3535,7 @@
 
     document.getElementById("restart-btn").addEventListener("click", () => {
       document.body.classList.remove("results-screen");
+      communityViewEl.style.display = "none";
       removeStoredValue(ACTIVE_SESSION_KEY);
       removeStoredValue(COMPLETED_RESULT_KEY);
       undoSnapshot = null;
@@ -3239,6 +3551,9 @@
       maxProgressPercent = 0;
       leftEmbed.src = "";
       rightEmbed.src = "";
+      posterName = "";
+      if (posterNameInput) posterNameInput.value = "";
+      updatePosterTitle();
 
       const shareStatusEl = document.getElementById("community-share-status");
       if (shareStatusEl) {
@@ -3286,6 +3601,7 @@
 
   function drawPosterRanking(ctx, width, height) {
     const top5 = sorted.slice(0, 5).map(idx => songs[idx].title);
+    const posterTitle = getPosterTitle();
     const titleY = 160;
 
     ctx.save();
@@ -3295,11 +3611,19 @@
     ctx.fillStyle = "#dff5ff";
     ctx.textBaseline = "top";
     ctx.textAlign = "left";
-    ctx.font =
-      "700 85px -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic', system-ui, sans-serif";
+    let titleFontSize = 85;
+    const titleFontFamily = "-apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic', system-ui, sans-serif";
+    ctx.font = `700 ${titleFontSize}px ${titleFontFamily}`;
+    if (typeof ctx.measureText === "function") {
+      const maxTitleWidth = Math.max(620, (width - 160) / posterTextScale);
+      while (titleFontSize > 48 && ctx.measureText(posterTitle).width > maxTitleWidth) {
+        titleFontSize -= 2;
+        ctx.font = `700 ${titleFontSize}px ${titleFontFamily}`;
+      }
+    }
     drawPosterGlowText(
       ctx,
-      translate("posterTitle"),
+      posterTitle,
       80,
       titleY,
       18,
