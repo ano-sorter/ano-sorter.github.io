@@ -63,6 +63,23 @@
     z-index: 1;
     overflow-y: auto;
     overflow-x: hidden;
+    isolation: isolate;
+  }
+
+  body.results-screen {
+    background-image: none;
+  }
+
+  body.results-screen::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image: url("ano-results-background-desktop.png");
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
   }
 
   h1 {
@@ -412,10 +429,14 @@
 
   /* Background selector for Top 5 */
   #bg-selector {
+    width: 100%;
+    min-width: 0;
     margin-bottom: 8px;
     padding: 10px 0 12px;
     border-bottom: 1px dashed rgba(0, 0, 0, 0.08);
     font-size: 12px;
+    overflow: hidden;
+    box-sizing: border-box;
   }
 
   #bg-upload {
@@ -433,6 +454,8 @@
     display: flex;
     align-items: center;
     gap: 6px;
+    width: 100%;
+    min-width: 0;
   }
 
   #bg-carousel {
@@ -1161,6 +1184,10 @@
       background-attachment: scroll;
     }
 
+    body.results-screen::before {
+      background-image: url("ano-results-background-mobile.png");
+    }
+
     h1 {
       font-size: 30px;
     }
@@ -1706,7 +1733,7 @@
         languageLabel: "Language",
         languagePickerAria: "Choose language",
         siteTitle: "ano Song Sorter",
-        introHtml: "<span class=\"intro-lead\">What is the #anoSorter?</span><br>Listen to two songs and choose the one you prefer! 🎧<br>When you finish, you'll get your own <strong>ano TOP 5</strong>. 🩵<br>Download your result as an image and customize its background♪<br>You can also share your result on social media 💫",
+        introHtml: "<span class=\"intro-lead\">How does #anoSorter work?</span><br>Compare two songs at a time and pick the one you like more! 🎧<br>When you’re done, you’ll get your very own <strong>ano TOP 5</strong>. 🩵<br>Download your result and choose a background you like♪<br>You can share it on social media too! 💫",
         resume: "Continue sorting",
         discard: "Start over",
         rankingModeLegend: "Ranking mode",
@@ -1721,7 +1748,7 @@
         start: "Start",
         previousResult: "View previous result",
         spotifyPlayer: "Spotify player",
-        preferThis: "I prefer this one!",
+        preferThis: "I like this one!",
         fullMode: "Full mode",
         top20Mode: "TOP 20 mode",
         estimated: "Estimated {percent}%",
@@ -1779,7 +1806,7 @@
         languageLabel: "語言",
         languagePickerAria: "選擇語言",
         siteTitle: "ano歌曲排序",
-        introHtml: "<span class=\"intro-lead\">什麼是 #ano排序？</span><br>聽聽兩首歌曲，選出你比較喜歡的一首！🎧<br>完成後，就會產生你的 <strong>ano歌曲TOP5</strong>。🩵<br>你可以下載結果圖片，也可以換成自己喜歡的背景♪<br>還可以直接把結果分享到社交平台 💫",
+        introHtml: "<span class=\"intro-lead\">#ano排序怎麼玩？</span><br>每次比較兩首歌，選出你比較喜歡的一首！🎧<br>完成後，就會得到專屬於你的<strong>ano歌曲TOP5</strong>。🩵<br>結果圖片可以下載，也可以換上你喜歡的背景♪<br>還可以直接分享到社交平台！💫",
         resume: "繼續上次排序",
         discard: "重新開始",
         rankingModeLegend: "排名模式",
@@ -1794,7 +1821,7 @@
         start: "開始",
         previousResult: "查看上次結果",
         spotifyPlayer: "Spotify播放器",
-        preferThis: "比較喜歡這首！",
+        preferThis: "我喜歡這首！",
         fullMode: "全曲模式",
         top20Mode: "TOP20模式",
         estimated: "預計 {percent}%",
@@ -2264,6 +2291,7 @@
     }
 
     function showSorterScreen() {
+      document.body.classList.remove("results-screen");
       introEl.style.display = "none";
       introStartEl.style.display = "none";
       resultsEl.style.display = "none";
@@ -2536,15 +2564,38 @@
       bgCarousel.scrollBy({ left: direction * distance, behavior: "smooth" });
     }
 
+    function centerBackgroundInCarousel(button) {
+      if (!bgCarousel || !button) return;
+
+      if (
+        typeof bgCarousel.scrollBy === "function" &&
+        typeof bgCarousel.getBoundingClientRect === "function" &&
+        typeof button.getBoundingClientRect === "function"
+      ) {
+        const carouselRect = bgCarousel.getBoundingClientRect();
+        const buttonRect = button.getBoundingClientRect();
+        const offset =
+          buttonRect.left - carouselRect.left -
+          (carouselRect.width - buttonRect.width) / 2;
+        bgCarousel.scrollBy({ left: offset, behavior: "smooth" });
+        return;
+      }
+
+      if (typeof bgCarousel.scrollTo === "function") {
+        const targetLeft =
+          (Number(button.offsetLeft) || 0) -
+          (bgCarousel.clientWidth - (Number(button.offsetWidth) || 0)) / 2;
+        bgCarousel.scrollTo({ left: Math.max(0, targetLeft), behavior: "smooth" });
+      }
+    }
+
     if (bgPrevBtn) bgPrevBtn.addEventListener("click", () => scrollBackgroundCarousel(-1));
     if (bgNextBtn) bgNextBtn.addEventListener("click", () => scrollBackgroundCarousel(1));
 
     bgButtons.forEach((btn) => {
       btn.addEventListener("click", () => {
         selectPresetBackground(btn.dataset.bg, btn);
-        if (typeof btn.scrollIntoView === "function") {
-          btn.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
-        }
+        centerBackgroundInCarousel(btn);
       });
     });
 
@@ -2722,6 +2773,7 @@
     }
 
     function startSorter() {
+      document.body.classList.remove("results-screen");
       const selectedRankingMode = document.querySelector('input[name="ranking-mode"]:checked');
       const selectedSongPool = document.querySelector('input[name="song-pool"]:checked');
 
@@ -3106,6 +3158,7 @@
     }
 
     function showResults({ fromSaved = false } = {}) {
+      document.body.classList.add("results-screen");
       choiceContainer.style.display = "none";
       sorterControlsEl.style.display = "none";
       resultsEl.style.display = "block";
@@ -3170,6 +3223,7 @@
     }
 
     document.getElementById("restart-btn").addEventListener("click", () => {
+      document.body.classList.remove("results-screen");
       removeStoredValue(ACTIVE_SESSION_KEY);
       removeStoredValue(COMPLETED_RESULT_KEY);
       undoSnapshot = null;
